@@ -14,7 +14,7 @@ env = gym.make('CartPole-v0')
 states = env.observation_space.shape[0]
 actions = env.action_space.n
 #print(states)  the states are cart position, cart velocity, pole angle, pole angular velocity
-#print(actions) the 2 actions are move left and move right
+#print(actions) the 2 actions are move left and move right... .
 
 episodes = 10
 for episode in range(0,episodes):
