@@ -46,7 +46,7 @@ class Qtrainer:
             reward = torch.unsqueeze(reward, 0)
             done = (done, )
 
-        #get predicted Q values with current state
+        #get predicted Q values with current state lol
         pred =  self.model(state)
         target = pred.clone()
         for i in range(len(done)):
