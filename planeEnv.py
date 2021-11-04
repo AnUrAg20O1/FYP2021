@@ -1,3 +1,4 @@
+import random
 import pygame
 from collections import namedtuple
 from enum import Enum
@@ -24,24 +25,26 @@ RED = (200,0,0)
 BLUE = (0, 100, 255)
 
 class Plane():
-    def __init__(self, w=900, h=750):
+    def __init__(self, w=900, h=800):
         self.h = h
         self.w = w
         self.display = pygame.display.set_mode((self.w, self.h))
         pygame.display.set_caption("plane")
         self.clock = pygame.time.Clock()
         self.reset()
+        
 
 
     def reset(self):
         #initialize plane direction as moving straight up
         self.direction = Direction.UP
 
-        self.plane = Point(self.w/2, self.h-BLOCK_SIZE)
-        self.enemyPlane = Point(BLOCK_SIZE, self.h/2)
+        self.plane = Point(350, self.h-BLOCK_SIZE)
+        self.enemyPlane = Point(BLOCK_SIZE, self.h-350)
         self.score = 0
         self.iteration = 0
-        self.env_length = 150
+        self.enemyPlaneSpeed = (random.randint(65,130))/100
+
 
 
     def play(self, action):
@@ -55,21 +58,41 @@ class Plane():
         #move plane and enemy plane
         self.movePlane(action)
         self.moveEnemyPlane()
-        self.env_length-=1
-        reward = 0 #need to be more elaborate to make sure less manoeuvers
+        y = self.plane.y
+        x = self.plane.x
+        reward = 0
 
-        #check if too near and calculate score and reward
+        #detailed calculation of score and reward
+        #give reward based on deviation from original path
+        deviation = abs(350-x)
+        reward = -(deviation*0.5) 
+
+        #if reach towards boundary give negetive reward
+        #left boundary
+        if x<50:
+            left = 50-x
+            reward = -(left*0.7)
+
+        #right boundary
+        if x>750:
+            right = x-750
+            reward = -(right*0.7)
+        
+        #if get into danger zone negetive reward
         d = self.closeness()
         if d <= 5*BLOCK_SIZE:
-            self.score-=1
-            reward = -30
-        if d <= BLOCK_SIZE:
+            self.score-=0.1*d
+            reward = -(d*10)
+        #if crash then very negetive reward
+        if d <= 1.5*BLOCK_SIZE:
+            self.score-=5
             reward = -100
-            done = True
+            done = True #if u crash then also done
             return reward, done, self.score 
 
         #check if done
-        if self.env_length<=0:
+        #end of environment then done
+        if y<=0:
             done = True
         else:
             done = False
@@ -103,7 +126,7 @@ class Plane():
 
     def movePlane(self, action):
         #[left40, left 20, straight, right20, right40]
-    
+        
         if np.array_equal(action, [1,0,0,0,0]):
             new_direction = Direction.LEFT40
         elif np.array_equal(action, [0,1,0,0,0]):
@@ -119,7 +142,7 @@ class Plane():
 
         y = self.plane.y
         x = self.plane.x
-        if y<40 or x<40 or x> 880:
+        if x<40 or x> 850:
             self.direction = Direction.UP
 
         if self.direction == Direction.LEFT40:
@@ -132,15 +155,11 @@ class Plane():
             x+=BLOCK_SIZE
 
         y-=BLOCK_SIZE
-        if y <= 20 or x<30 or x> 900:
-            y = self.h-BLOCK_SIZE
-            x = self.w/2
         self.plane = Point(x,y)    
 
     def moveEnemyPlane(self):
         y = self.enemyPlane.y
         x = self.enemyPlane.x
-        x+=BLOCK_SIZE
-        if x > 900:
-            x = BLOCK_SIZE
+        x+=BLOCK_SIZE*self.enemyPlaneSpeed
+   
         self.enemyPlane = Point(x,y) 

@@ -1,4 +1,3 @@
-from pygame.sprite import collide_circle
 import torch   
 import random
 import numpy as np

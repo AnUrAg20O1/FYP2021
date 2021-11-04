@@ -2,6 +2,7 @@ import pygame
 from collections import namedtuple
 from enum import Enum
 import math
+import random
 
 pygame.init()
 font = pygame.font.SysFont('arial', 20)
@@ -23,7 +24,7 @@ RED = (200,0,0)
 BLUE = (0, 100, 255)
 
 class Plane():
-    def __init__(self, w=900, h=750):
+    def __init__(self, w=900, h=800):
         self.h = h
         self.w = w
         self.display = pygame.display.set_mode((self.w, self.h))
@@ -33,12 +34,14 @@ class Plane():
         #initialize plane direction as moving straight up
         self.direction = Direction.UP
 
-        self.plane = Point(self.w/2, self.h-BLOCK_SIZE)
+        self.plane = Point(350, self.h-BLOCK_SIZE)
         #self.score = 0
-        self.enemyPlane = Point(BLOCK_SIZE, self.h/2)
+        self.enemyPlane = Point(BLOCK_SIZE, self.h-350)
         #self.spawnEnemyPlane()
-        self.env_length =  600
+        #self.env_length =  600
         self.score = 0
+        self.enemyPlaneSpeed = (random.randint(65,130))/100
+        print(self.enemyPlaneSpeed)
 
     def play(self):
         #get user input
@@ -61,7 +64,7 @@ class Plane():
         #move plane and enemy plane
         self.movePlane(self.direction)
         self.moveEnemyPlane()
-        self.env_length-=1
+        #self.env_length-=1
 
         #check if too near and calculate score
         d = self.closeness() #implement score
@@ -71,7 +74,9 @@ class Plane():
             self.score-=3 
 
         #check if done
-        if self.env_length<=0:
+        y = self.plane.y
+        x = self.plane.x
+        if y<=0:
             done = True
         else:
             done = False
@@ -106,7 +111,7 @@ class Plane():
     def movePlane(self, direction):
         y = self.plane.y
         x = self.plane.x
-        if y<40 or x<40 or x> 880:
+        if x<40 or x> 850:
             self.direction = Direction.UP
 
         if direction == Direction.LEFT40:
@@ -119,17 +124,19 @@ class Plane():
             x+=BLOCK_SIZE
 
         y-=BLOCK_SIZE
-        if y <= 20 or x<30 or x> 900:
-            y = self.h-BLOCK_SIZE
-            x = self.w/2
+        # if y <= 20 or x<30 or x> 700:
+        #     y = self.h-BLOCK_SIZE
+        #     x = self.w/2
         self.plane = Point(x,y)    
 
     def moveEnemyPlane(self):
         y = self.enemyPlane.y
         x = self.enemyPlane.x
-        x+=BLOCK_SIZE
-        if x > 900:
-            x = BLOCK_SIZE
+        
+
+        x+=BLOCK_SIZE*self.enemyPlaneSpeed
+        # if x > 700:
+        #     x = BLOCK_SIZE
         self.enemyPlane = Point(x,y) 
 
 
